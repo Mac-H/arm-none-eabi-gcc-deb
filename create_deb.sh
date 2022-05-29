@@ -14,7 +14,10 @@ echo "Downloading..."
 curl -fSL -A "Mozilla/4.0" -o gcc-arm-none-eabi.tar "$URL"
 
 echo "Extracting..."
-tar -xf gcc-arm-none-eabi.tar
+mkdir tmp
+pushd tmp
+tar -xf ../gcc-arm-none-eabi.tar
+popd
 rm gcc-arm-none-eabi.tar
 
 echo "Generating debian package..."
@@ -26,7 +29,7 @@ echo "Version: $VER"                       >> gcc-arm-none-eabi/DEBIAN/control
 echo "Architecture: amd64"                 >> gcc-arm-none-eabi/DEBIAN/control
 echo "Maintainer: maintainer"              >> gcc-arm-none-eabi/DEBIAN/control
 echo "Description: Arm Embedded toolchain" >> gcc-arm-none-eabi/DEBIAN/control
-mv gcc-arm-none-eabi-*/* gcc-arm-none-eabi/usr/
+mv tmp/gcc-arm-*/* gcc-arm-none-eabi/usr/
 dpkg-deb --build --root-owner-group gcc-arm-none-eabi
 
 # echo "Installing..."
