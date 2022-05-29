@@ -1,0 +1,17 @@
+image: python:3
+
+stages:
+  - build
+
+arm-none-eabi-gcc-deb:
+  stage: build
+  script:
+    - export VER="${CI_COMMIT_TAG}"
+    - chmod +x ./create_deb.sh
+    - ./create_deb.sh
+    - gitlab-release --no-registry --link-artifact ./*.deb
+  artifacts:
+    paths:
+      - ./*.deb
+  only:
+    - tags
