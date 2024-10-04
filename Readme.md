@@ -1,8 +1,8 @@
-# arm-none-eabi-gcc-deb
+# Create: arm-none-eabi-gcc-deb
 Automated x86_64 deb package builder for GNU Arm Embedded Toolchain (bare-metal)<br>
 This currently creates a deb installer for version **13.3.rel1**<br>
 <br>
-You can download it the deb installer here: [**gcc-arm-none-eabi-13.3.rel1-x86_64.deb**](https://github.com/Mac-H/arm-none-eabi-gcc-deb/releases/tag/v13.3-rel1)
+You can download it the deb installer here: [**gcc-arm-none-eabi-13.3.rel1-x86_64.deb**](https://github.com/Mac-H/arm-none-eabi-gcc-deb/releases/download/v13.3-rel1/gcc-arm-none-eabi-13.3.rel1-x86_64.deb)
 
 > [!IMPORTANT]<br>
 > There is an issue with running **arm-none-eabi-gdb** on **Ubuntu 24.04** 'noble'.
@@ -13,8 +13,8 @@ You can download it the deb installer here: [**gcc-arm-none-eabi-13.3.rel1-x86_6
 >To work around this, this kludge **_seems_** to work:
 >
 >```
->curl http://security.debian.org/debian-security/pool/updates/main/n/ncurses/libncurses5_6.1+20181013-2+deb10u5_amd64.deb -o libncurses.deb
->curl http://security.debian.org/debian-security/pool/updates/main/n/ncurses/libtinfo5_6.1+20181013-2+deb10u5_amd64.deb   -o libtinfo.deb
+>curl http://security.debian.org/debian-security/pool/updates/main/n/ncurses/libncurses5_6.1+20181013-2+deb10u5_amd64.deb -L -o libncurses.deb
+>curl http://security.debian.org/debian-security/pool/updates/main/n/ncurses/libtinfo5_6.1+20181013-2+deb10u5_amd64.deb   -L -o libtinfo.deb
 >sudo dpkg -i libncurses.deb libtinfo.deb
 >sudo ln -s /lib/x86_64-linux-gnu/libncursesw.so.6 /lib/x86_64-linux-gnu/libncursesw.so.5
 >```
@@ -30,9 +30,9 @@ You can download it the deb installer here: [**gcc-arm-none-eabi-13.3.rel1-x86_6
 #  -- Using snippet from https://github.com/Mac-H/arm-none-eabi-gcc-deb
 #
 WORKDIR /opt/downloads
-RUN curl https://github.com/Mac-H/arm-none-eabi-gcc-deb/releases/download/v13.3-rel1/gcc-arm-none-eabi-13.3.rel1-x86_64.deb     -o gcc-arm-none-eabi-13.3.rel1-x86_64.deb
-RUN curl http://security.debian.org/debian-security/pool/updates/main/n/ncurses/libncurses5_6.1+20181013-2+deb10u5_amd64.deb    -o libncurses5_6.1+20181013-2+deb10u5_amd64.deb
-RUN curl http://security.debian.org/debian-security/pool/updates/main/n/ncurses/libtinfo5_6.1+20181013-2+deb10u5_amd64.deb      -o libtinfo5_6.1+20181013-2+deb10u5_amd64.deb
+RUN curl https://github.com/Mac-H/arm-none-eabi-gcc-deb/releases/download/v13.3-rel1/gcc-arm-none-eabi-13.3.rel1-x86_64.deb     -L -o gcc-arm-none-eabi-13.3.rel1-x86_64.deb
+RUN curl http://security.debian.org/debian-security/pool/updates/main/n/ncurses/libncurses5_6.1+20181013-2+deb10u5_amd64.deb    -L -o libncurses5_6.1+20181013-2+deb10u5_amd64.deb
+RUN curl http://security.debian.org/debian-security/pool/updates/main/n/ncurses/libtinfo5_6.1+20181013-2+deb10u5_amd64.deb      -L -o libtinfo5_6.1+20181013-2+deb10u5_amd64.deb
 
 RUN dpkg -i libncurses5_6.1+20181013-2+deb10u5_amd64.deb libtinfo5_6.1+20181013-2+deb10u5_amd64.deb
 RUN ln -s /lib/x86_64-linux-gnu/libncursesw.so.6 /lib/x86_64-linux-gnu/libncursesw.so.5
