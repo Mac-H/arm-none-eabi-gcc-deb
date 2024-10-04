@@ -1,42 +1,83 @@
-#!/bin/bash
+#!/bin/bash -eu
 # https://askubuntu.com/a/1371525
 # https://developer.arm.com/downloads/-/gnu-rm
 
-VER=${VER:-'10.3-2021.10'}
+this_dir="$(realpath -m "$(dirname "$0")")"
 
-#URL=https://developer.arm.com/-/media/Files/downloads/gnu-rm/${VER}/gcc-arm-none-eabi-${VER}-x86_64-linux.tar.bz2
-URL=https://developer.arm.com/-/media/Files/downloads/gnu/${VER}/binrel/gcc-arm-${VER}-x86_64-arm-none-eabi.tar.xz
+PACKAGE_NAME=gcc-arm-none-eabi
+ARCH_IN="x86_64"
+MAINTAINER="Mac@SpaceMachines.com"
+DESCRIPTION="GNU Arm Embedded Toolchain: bare-metal targetting ARM Cortex-M and Cortex-R processors"
 
-echo "Creating gcc-arm-none-eabi x86_64 debian package" 
-echo "version: $VER"
+#
+#
+#
+VER=${VER:-13.3.rel1}
 
+
+ARCH_OUT="$ARCH_IN" ; [[ "$ARCH_OUT" == "x86_64" ]] && ARCH_OUT="amd64"
+
+URL=https://developer.arm.com/-/media/Files/downloads/gnu/${VER}/binrel/arm-gnu-toolchain-${VER}-${ARCH_IN}-arm-none-eabi.tar.xz
+echo "Creating ${PACKAGE_NAME}  debian ($ARCH_OUT) package -- version $VER"
 echo "Downloading..."
-curl -fSL -A "Mozilla/4.0" -o gcc-arm-none-eabi.tar "$URL"
 
-echo "Extracting..."
-mkdir tmp
-pushd tmp
-tar -xf ../gcc-arm-none-eabi.tar
-popd
-rm gcc-arm-none-eabi.tar
+tar_fname="$(pwd)/${PACKAGE_NAME}.tar.xz"
 
-echo "Generating debian package..."
-mkdir gcc-arm-none-eabi
-mkdir gcc-arm-none-eabi/DEBIAN
-mkdir gcc-arm-none-eabi/usr
-echo "Package: gcc-arm-none-eabi"          >  gcc-arm-none-eabi/DEBIAN/control
-echo "Version: $VER"                       >> gcc-arm-none-eabi/DEBIAN/control
-echo "Architecture: amd64"                 >> gcc-arm-none-eabi/DEBIAN/control
-echo "Maintainer: maintainer"              >> gcc-arm-none-eabi/DEBIAN/control
-echo "Description: Arm Embedded toolchain" >> gcc-arm-none-eabi/DEBIAN/control
-mv tmp/gcc-arm-*/* gcc-arm-none-eabi/usr/
-dpkg-deb --build --root-owner-group gcc-arm-none-eabi
+[[ -f "$tar_fname" ]] || wget -q --show-progress -O "$tar_fname" "$URL"
 
-# echo "Installing..."
-# sudo apt install ./gcc-arm-none-eabi.deb -y --allow-downgrades
+tmp_dir="$(mktemp -d "${PACKAGE_NAME}_tmp_XXXX")"
+echo "Extracting to '$tmp_dir'..."
 
-mv "gcc-arm-none-eabi.deb" "gcc-arm-none-eabi-${VER}-x86_64.deb"
-ls -l *.deb
+if pushd "$tmp_dir" >/dev/null ; then
+    tar -xf "$tar_fname"
+    popd >/dev/null || echo "Error: popd failed"
+fi
 
+#
+# Build package contents
+#
+echo Build Package Contents
+{
+    rm -rf "$PACKAGE_NAME"
+    mkdir -p "$PACKAGE_NAME"
+
+    cp "$this_dir/src/"* "$PACKAGE_NAME" -r
+
+    mkdir -p "$PACKAGE_NAME"
+    mkdir -p "$PACKAGE_NAME/DEBIAN"
+    mkdir -p "$PACKAGE_NAME/usr"
+
+    {
+        echo "Package: $PACKAGE_NAME"
+        echo "Version: $VER"
+        echo "Architecture: ${ARCH_OUT}"
+        echo "Maintainer: $MAINTAINER"
+        echo "Description: $DESCRIPTION"
+    } > "$PACKAGE_NAME/DEBIAN/control"
+
+    mv "$tmp_dir/arm-"*/* "$PACKAGE_NAME/usr/"
+    rm -rf $PACKAGE_NAME/usr/*.txt
+
+    echo "+----------------------------------------------"
+    {
+        cat "$PACKAGE_NAME/DEBIAN/control"
+        echo
+        tree "${PACKAGE_NAME}" -L 3 --noreport
+    } | sed 's/^/|  /'
+    echo "+----------------------------------------------"
+}
+
+rm -rf "$tmp_dir"
+
+#
+# Create debian file
+#
+DEB_FILE_NAME="${PACKAGE_NAME}-${VER}-${ARCH_IN}.deb"
+
+dpkg-deb --root-owner-group --build "$PACKAGE_NAME"  "$DEB_FILE_NAME"
+
+echo "File generated: $DEB_FILE_NAME}"
+echo "Install with \` sudo dpkg -i ${DEB_FILE_NAME@Q} \`"
+# sudo apt install ./$DEB_FILE_NAME -y --allow-downgrades\`"
 echo "Done."
 
