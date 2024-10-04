@@ -75,9 +75,12 @@ rm -rf "$tmp_dir"
 DEB_FILE_NAME="${PACKAGE_NAME}-${VER}-${ARCH_IN}.deb"
 
 dpkg-deb --root-owner-group --build "$PACKAGE_NAME"  "$DEB_FILE_NAME"
-
-echo "File generated: $DEB_FILE_NAME}"
+echo
+echo "File generated: ${DEB_FILE_NAME}"
 echo "Install with \` sudo dpkg -i ${DEB_FILE_NAME@Q} \`"
-# sudo apt install ./$DEB_FILE_NAME -y --allow-downgrades\`"
-echo "Done."
+echo
+echo "Hash (MD5)                      | Filename                              "
+echo "--------------------------------|---------------------------------------"
+md5sum "$DEB_FILE_NAME"
+echo
 
